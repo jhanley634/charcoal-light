@@ -1,5 +1,5 @@
 
-This repo supports performance testing for SE SmokeDetector regexes.
+This repo supports performance testing for Stack Exchange SmokeDetector regexes.
 It avoids storing 1.3 Gig of SmokeDetector's git history,
 and shows the path to transitioning SmokeDetector code and/or data
 to a new, smaller repo.
