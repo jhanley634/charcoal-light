@@ -3,6 +3,9 @@ import warnings
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     import globalvars
+    from classes import Post
+    from findspam import FindSpam, get_ns_ips, ip_for_url_host
+    from helpers import log
 
 # @pytest.mark.parametrize("title, body, username, site, body_is_summary, is_answer, expected_spam", [
 
@@ -161,19 +164,17 @@ But when I try to run it using</p>""",
 ]
 
 
-def ztest_findspam(title, body, username, site, body_is_summary, is_answer, expected_spam):
-    post = Post(
-        api_response={
-            'title': title,
-            'body': body,
-            'owner': {'display_name': username, 'reputation': 1, 'link': ''},
-            'site': site,
-            'question_id': '1',
-            'IsAnswer': is_answer,
-            'BodyIsSummary': body_is_summary,
-            'score': 0,
-        }
-    )
+def test_each_example() -> None:
+    assert 132 == len(vec)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+        for v in vec:
+            tst_findspam2(*v)
+
+
+def tst_findspam2(title, body, username, site, body_is_summary, is_answer, expected_spam):
+    post = Post(api_response={'title': title, 'body': body, 'owner': {'display_name': username, 'reputation': 1, 'link': ''}, 'site': site, 'question_id': '1', 'IsAnswer': is_answer, 'BodyIsSummary': body_is_summary, 'score': 0})
     full_result = FindSpam.test_post(post)
     result = full_result[0]
     why = full_result[1]
@@ -184,9 +185,3 @@ def ztest_findspam(title, body, username, site, body_is_summary, is_answer, expe
     if scan_spam != expected_spam:
         print("Expected {1} on {0}".format(body, expected_spam))
     assert scan_spam == expected_spam
-
-
-def test_jh() -> None:
-    assert 132 == len(vec)
-    # for v in vec:
-    #     ztest_findspam(*v)

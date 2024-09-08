@@ -7,7 +7,7 @@ all: test
 
 SD := ../SmokeDetector
 
-TEXT_FILES = \
+TEXT_FILES := \
  bad_keywords.txt \
  watched_keywords.txt \
  blacklisted_websites.txt \
@@ -20,8 +20,11 @@ TEXT_FILES = \
  watched_cidrs.yml \
  watched_asns.yml \
 
+ENV := env PYTHONPATH=.:$(SD)  # :$(SD)/test
+PYTEST := $(ENV) pytest --capture=tee-sys
+
 test: config.ci $(TEXT_FILES)
-	$(ACTIVATE) && env PYTHONPATH=.:$(SD) pytest test/test_vector.py  # $(SD)/test/test_findspam.py
+	$(ACTIVATE) && $(PYTEST) test/test_vector.py
 
 config.ci: $(SD)/config.ci
 	cp $< $@
@@ -31,7 +34,7 @@ config.ci: $(SD)/config.ci
 %.yml:
 	cp $(SD)/$@ $@
 
-STRICT = --strict --warn-unreachable --ignore-missing-imports --no-namespace-packages
+STRICT := --strict --warn-unreachable --ignore-missing-imports --no-namespace-packages
 
 ruff-check:
 	$(ACTIVATE) && black . && isort . && ruff check
