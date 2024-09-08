@@ -7,8 +7,8 @@ all: test
 
 SD := ../SmokeDetector
 
-test: install
-	echo test.
+test:
+	$(ACTIVATE) && echo test.
 
 STRICT = --strict --warn-unreachable --ignore-missing-imports --no-namespace-packages
 
@@ -36,4 +36,6 @@ $(SD):
 	du -sk $@
 
 clean:
-	rm -f $(TEMP)
+	rm -f $(TEMP) $(HOME)/.venv/$(PROJECT)
+
+.PHONY: all test ruff-check lint install clean
