@@ -7,8 +7,29 @@ all: test
 
 SD := ../SmokeDetector
 
-test:
-	$(ACTIVATE) && echo test.
+TEXT_FILES = \
+ bad_keywords.txt \
+ watched_keywords.txt \
+ blacklisted_websites.txt \
+ blacklisted_usernames.txt \
+ blacklisted_numbers.txt \
+ watched_numbers.txt \
+ blacklisted_nses.yml \
+ watched_nses.yml \
+ blacklisted_cidrs.yml \
+ watched_cidrs.yml \
+ watched_asns.yml \
+
+test: config.ci $(TEXT_FILES)
+	$(ACTIVATE) && env PYTHONPATH=.:$(SD) pytest test/test_vector.py  # $(SD)/test/test_findspam.py
+
+config.ci: $(SD)/config.ci
+	cp $< $@
+
+%.txt:
+	cp $(SD)/$@ $@
+%.yml:
+	cp $(SD)/$@ $@
 
 STRICT = --strict --warn-unreachable --ignore-missing-imports --no-namespace-packages
 
