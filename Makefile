@@ -7,10 +7,34 @@ all: test
 
 SD := ../SmokeDetector
 
-test:
-	$(ACTIVATE) && echo test.
+TEXT_FILES := \
+ bad_keywords.txt \
+ watched_keywords.txt \
+ blacklisted_websites.txt \
+ blacklisted_usernames.txt \
+ blacklisted_numbers.txt \
+ watched_numbers.txt \
+ blacklisted_nses.yml \
+ watched_nses.yml \
+ blacklisted_cidrs.yml \
+ watched_cidrs.yml \
+ watched_asns.yml \
 
-STRICT = --strict --warn-unreachable --ignore-missing-imports --no-namespace-packages
+ENV := env PYTHONPATH=.:$(SD)  # :$(SD)/test
+PYTEST := $(ENV) pytest --capture=tee-sys
+
+test: config.ci $(TEXT_FILES)
+	$(ACTIVATE) && $(PYTEST) test/test_vector.py
+
+config.ci: $(SD)/config.ci
+	cp $< $@
+
+%.txt:
+	cp $(SD)/$@ $@
+%.yml:
+	cp $(SD)/$@ $@
+
+STRICT := --strict --warn-unreachable --ignore-missing-imports --no-namespace-packages
 
 ruff-check:
 	$(ACTIVATE) && black . && isort . && ruff check
