@@ -4,6 +4,8 @@ git+https://github.com/Charcoal-SE/ChatExchange.git
 isort >= 5.13.2
 msgpack-python >= 0.5.6
 mypy >= 1.11.2
+pandas >= 2.2.2
+pandas-stubs >= 2.2.2.240807
 phonenumbers >= 8.13.45
 pip >= 24.2
 pyright >= 1.1.379

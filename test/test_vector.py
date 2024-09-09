@@ -1,4 +1,7 @@
 import warnings
+from time import time
+
+import pandas as pd
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -6,6 +9,11 @@ with warnings.catch_warnings():
     from classes import Post
     from findspam import FindSpam, get_ns_ips, ip_for_url_host
     from helpers import log
+
+assert globalvars
+assert Post
+assert FindSpam
+assert log
 
 # @pytest.mark.parametrize("title, body, username, site, body_is_summary, is_answer, expected_spam", [
 
@@ -168,9 +176,17 @@ def test_each_example() -> None:
     assert 132 == len(vec)
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=DeprecationWarning)
+        elapsed: dict[str, float] = {}
 
-        for v in vec:
+        for i, v in enumerate(vec):
+            t0 = time()
             tst_findspam2(*v)
+            elapsed[i] = time() - t0
+
+        df = pd.DataFrame(elapsed.items(), columns=['idx', 'time'])
+        print(df)
+        print(df.describe())
+        print(df.sort_values('time', ascending=False))
 
 
 def tst_findspam2(title, body, username, site, body_is_summary, is_answer, expected_spam):
