@@ -6,15 +6,11 @@ import pandas as pd
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
-    import globalvars
     from classes import Post, PostParseError
     from findspam import FindSpam
     from helpers import log
 
-assert globalvars
-assert Post
 assert FindSpam
-assert log
 
 # @pytest.mark.parametrize("title, body, username, site, body_is_summary, is_answer, expected_spam", [
 
