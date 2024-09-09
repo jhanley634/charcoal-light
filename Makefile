@@ -24,8 +24,7 @@ ENV := env PYTHONPATH=.:$(SD)  # :$(SD)/test
 PYTEST := $(ENV) pytest --capture=tee-sys
 
 test: config.ci $(TEXT_FILES)
-	$(ACTIVATE) && $(PYTEST) test/test_named_list.py
-	# $(ACTIVATE) && $(PYTEST) test/test_vector.py
+	$(ACTIVATE) && $(PYTEST) test/test_{named_list,vector}.py
 
 config.ci: $(SD)/config.ci
 	cp $< $@

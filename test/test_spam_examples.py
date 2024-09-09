@@ -1,3 +1,4 @@
+"""Like test_findspam, but with a test vector of examples broken out for independent consumption."""
 import warnings
 from time import time
 from typing import Any
@@ -14,7 +15,7 @@ assert FindSpam
 
 # @pytest.mark.parametrize("title, body, username, site, body_is_summary, is_answer, expected_spam", [
 
-vec = [
+spam_examples = [
     ('A post on which testing hangs for minutes when using \\L<city>', '<p>sh%st%s</p>\n' % ('i' * 600, '!' * 38), 'Someone', 'askubuntu.com', True, True, False),
     ('A post which was hanging for minutes in pattern-matching websites after the \\L<city> fix', '<p>%s</p>\n' % ('burhan' * 3346), 'Someone', 'askubuntu.com', True, True, False),
     ('18669786819 gmail customer service number 1866978-6819 gmail support number', '', '', '', False, False, True),
@@ -170,14 +171,14 @@ But when I try to run it using</p>""",
 
 
 def test_each_example() -> None:
-    assert 132 == len(vec)
+    assert 132 == len(spam_examples)
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=DeprecationWarning)
         elapsed: list[float] = []
 
-        for v in vec:
+        for example in spam_examples:
             t0 = time()
-            tst_findspam2(*v)
+            tst_findspam2(*example)
             elapsed.append(time() - t0)
 
         df = pd.DataFrame({'elapsed': elapsed})
