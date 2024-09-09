@@ -1,13 +1,14 @@
 import warnings
 from time import time
+from typing import Any
 
 import pandas as pd
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     import globalvars
-    from classes import Post
-    from findspam import FindSpam, get_ns_ips, ip_for_url_host
+    from classes import Post, PostParseError
+    from findspam import FindSpam
     from helpers import log
 
 assert globalvars
@@ -176,21 +177,41 @@ def test_each_example() -> None:
     assert 132 == len(vec)
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=DeprecationWarning)
-        elapsed: dict[str, float] = {}
+        elapsed: list[float] = []
 
-        for i, v in enumerate(vec):
+        for v in vec:
             t0 = time()
             tst_findspam2(*v)
-            elapsed[i] = time() - t0
+            elapsed.append(time() - t0)
 
-        df = pd.DataFrame(elapsed.items(), columns=['idx', 'time'])
+        df = pd.DataFrame({'elapsed': elapsed})
+        df = df[df.elapsed > 0.9]
+        df = df.sort_values('elapsed')
         print(df)
-        print(df.describe())
-        print(df.sort_values('time', ascending=False))
+        assert len(df) >= 12
 
 
-def tst_findspam2(title, body, username, site, body_is_summary, is_answer, expected_spam):
-    post = Post(api_response={'title': title, 'body': body, 'owner': {'display_name': username, 'reputation': 1, 'link': ''}, 'site': site, 'question_id': '1', 'IsAnswer': is_answer, 'BodyIsSummary': body_is_summary, 'score': 0})
+def tst_findspam2(
+    title: str,
+    body: str,
+    username: str,
+    site: str,
+    body_is_summary: bool,
+    is_answer: bool,
+    expected_spam: bool,
+) -> None:
+    post = Post2(
+        api_response={
+            'title': title,
+            'body': body,
+            'owner': {'display_name': username, 'reputation': 1, 'link': ''},
+            'site': site,
+            'question_id': '1',
+            'IsAnswer': is_answer,
+            'BodyIsSummary': body_is_summary,
+            'score': 0,
+        }
+    )
     full_result = FindSpam.test_post(post)
     result = full_result[0]
     why = full_result[1]
@@ -201,3 +222,41 @@ def tst_findspam2(title, body, username, site, body_is_summary, is_answer, expec
     if scan_spam != expected_spam:
         print("Expected {1} on {0}".format(body, expected_spam))
     assert scan_spam == expected_spam
+
+
+class Post2(Post):  # type: ignore [misc]
+    def __init__(
+        self,
+        json_data: str | None = None,
+        api_response: dict[Any, Any] | None = None,
+        parent: Post | None = None,
+    ) -> None:
+        """This constructor has same code, but a more modern annotated signature."""
+        self._body = ""
+        self._body_is_summary = False
+        self._markdown = None
+        self._is_answer = False
+        self._owner_rep = 1
+        self._parent = None  # If not None, _is_answer should be 'true' because there would then be a parent post.
+        self._post_id = ""
+        self._post_score = 0
+        self._post_site = ""
+        self._post_url = ""
+        self._title = ""
+        self._user_name = ""
+        self._user_url = ""
+        self._votes = {'downvotes': None, 'upvotes': None}
+        self._edited = False
+
+        if parent is not None:
+            if not isinstance(parent, Post):
+                raise TypeError("Parent object for a Post object must also be a Post object.")
+            else:
+                self._parent = parent
+
+        if json_data is not None:
+            self._parse_json_post(json_data)
+        elif api_response is not None:
+            self._parse_api_post(api_response)
+        else:
+            raise PostParseError("Must provide either JSON Data or an API Response object for Post object.")

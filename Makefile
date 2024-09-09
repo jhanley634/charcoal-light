@@ -39,7 +39,7 @@ STRICT := --strict --warn-unreachable --ignore-missing-imports --no-namespace-pa
 ruff-check:
 	$(ACTIVATE) && black --line-length=800 -S . && isort . && ruff check
 lint: ruff-check
-	$(ACTIVATE) && pyright .
+	$(ACTIVATE) && $(ENV) pyright .
 	$(ACTIVATE) && mypy $(STRICT) .
 
 install: $(SD) $(HOME)/.venv/$(PROJECT)/bin/activate
