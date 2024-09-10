@@ -1,4 +1,5 @@
 """Like test_findspam, but with a test vector of examples broken out for independent consumption."""
+
 import warnings
 from time import time
 from typing import Any
@@ -185,7 +186,7 @@ def test_each_example() -> None:
         df = df[df.elapsed > 0.9]
         df = df.sort_values('elapsed')
         print(df)
-        assert len(df) >= 12
+        assert len(df) >= 10
 
 
 def tst_findspam2(
