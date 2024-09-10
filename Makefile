@@ -21,10 +21,10 @@ TEXT_FILES := \
  watched_asns.yml \
 
 ENV := env PYTHONPATH=.:$(SD)  # :$(SD)/test
-PYTEST := $(ENV) pytest --capture=tee-sys
+PYTEST := $(ENV) pytest  # --capture=tee-sys
 
 test: config.ci $(TEXT_FILES)
-	$(ACTIVATE) && $(PYTEST) test/test_vector.py
+	$(ACTIVATE) && $(PYTEST) test/test_*.py
 
 config.ci: $(SD)/config.ci
 	cp $< $@
@@ -37,9 +37,9 @@ config.ci: $(SD)/config.ci
 STRICT := --strict --warn-unreachable --ignore-missing-imports --no-namespace-packages
 
 ruff-check:
-	$(ACTIVATE) && black . && isort . && ruff check
+	$(ACTIVATE) && black --line-length=800 -S . && isort . && ruff check
 lint: ruff-check
-	$(ACTIVATE) && pyright .
+	$(ACTIVATE) && $(ENV) pyright .
 	$(ACTIVATE) && mypy $(STRICT) .
 
 install: $(SD) $(HOME)/.venv/$(PROJECT)/bin/activate

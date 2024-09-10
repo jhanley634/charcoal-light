@@ -1,9 +1,12 @@
+beartype >= 0.18.5
 black >= 24.8.0
 dnspython >= 2.6.1
 git+https://github.com/Charcoal-SE/ChatExchange.git
 isort >= 5.13.2
 msgpack-python >= 0.5.6
 mypy >= 1.11.2
+pandas >= 2.2.2
+pandas-stubs >= 2.2.2.240909
 phonenumbers >= 8.13.45
 pip >= 24.2
 pyright >= 1.1.379
@@ -11,6 +14,7 @@ pytest >= 8.3.2
 pyyaml >= 6.0.2
 regex >= 2024.7.24
 requests >= 2.32.3
+requests-cache >= 1.2.1
 ruff >= 0.6.4
 sh >= 2.0.7
 termcolor >= 2.4.0

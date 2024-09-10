@@ -1,15 +1,22 @@
+"""Like test_findspam, but with a test vector of examples broken out for independent consumption."""
+
 import warnings
+from time import time
+from typing import Any
+
+import pandas as pd
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
-    import globalvars
-    from classes import Post
-    from findspam import FindSpam, get_ns_ips, ip_for_url_host
+    from classes import Post, PostParseError
+    from findspam import FindSpam
     from helpers import log
+
+assert FindSpam
 
 # @pytest.mark.parametrize("title, body, username, site, body_is_summary, is_answer, expected_spam", [
 
-vec = [
+spam_examples = [
     ('A post on which testing hangs for minutes when using \\L<city>', '<p>sh%st%s</p>\n' % ('i' * 600, '!' * 38), 'Someone', 'askubuntu.com', True, True, False),
     ('A post which was hanging for minutes in pattern-matching websites after the \\L<city> fix', '<p>%s</p>\n' % ('burhan' * 3346), 'Someone', 'askubuntu.com', True, True, False),
     ('18669786819 gmail customer service number 1866978-6819 gmail support number', '', '', '', False, False, True),
@@ -165,16 +172,44 @@ But when I try to run it using</p>""",
 
 
 def test_each_example() -> None:
-    assert 132 == len(vec)
+    assert 132 == len(spam_examples)
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=DeprecationWarning)
+        elapsed: list[float] = []
 
-        for v in vec:
-            tst_findspam2(*v)
+        for example in spam_examples:
+            t0 = time()
+            tst_findspam2(*example)
+            elapsed.append(time() - t0)
+
+        df = pd.DataFrame({'elapsed': elapsed})
+        df = df[df.elapsed > 0.9]
+        df = df.sort_values('elapsed')
+        print(df)
+        assert len(df) >= 10
 
 
-def tst_findspam2(title, body, username, site, body_is_summary, is_answer, expected_spam):
-    post = Post(api_response={'title': title, 'body': body, 'owner': {'display_name': username, 'reputation': 1, 'link': ''}, 'site': site, 'question_id': '1', 'IsAnswer': is_answer, 'BodyIsSummary': body_is_summary, 'score': 0})
+def tst_findspam2(
+    title: str,
+    body: str,
+    username: str,
+    site: str,
+    body_is_summary: bool,
+    is_answer: bool,
+    expected_spam: bool,
+) -> None:
+    post = Post2(
+        api_response={
+            'title': title,
+            'body': body,
+            'owner': {'display_name': username, 'reputation': 1, 'link': ''},
+            'site': site,
+            'question_id': '1',
+            'IsAnswer': is_answer,
+            'BodyIsSummary': body_is_summary,
+            'score': 0,
+        }
+    )
     full_result = FindSpam.test_post(post)
     result = full_result[0]
     why = full_result[1]
@@ -185,3 +220,41 @@ def tst_findspam2(title, body, username, site, body_is_summary, is_answer, expec
     if scan_spam != expected_spam:
         print("Expected {1} on {0}".format(body, expected_spam))
     assert scan_spam == expected_spam
+
+
+class Post2(Post):  # type: ignore [misc]
+    def __init__(
+        self,
+        json_data: str | None = None,
+        api_response: dict[Any, Any] | None = None,
+        parent: Post | None = None,
+    ) -> None:
+        """This constructor has same code, but a more modern annotated signature."""
+        self._body = ""
+        self._body_is_summary = False
+        self._markdown = None
+        self._is_answer = False
+        self._owner_rep = 1
+        self._parent = None  # If not None, _is_answer should be 'true' because there would then be a parent post.
+        self._post_id = ""
+        self._post_score = 0
+        self._post_site = ""
+        self._post_url = ""
+        self._title = ""
+        self._user_name = ""
+        self._user_url = ""
+        self._votes = {'downvotes': None, 'upvotes': None}
+        self._edited = False
+
+        if parent is not None:
+            if not isinstance(parent, Post):
+                raise TypeError("Parent object for a Post object must also be a Post object.")
+            else:
+                self._parent = parent
+
+        if json_data is not None:
+            self._parse_json_post(json_data)
+        elif api_response is not None:
+            self._parse_api_post(api_response)
+        else:
+            raise PostParseError("Must provide either JSON Data or an API Response object for Post object.")
